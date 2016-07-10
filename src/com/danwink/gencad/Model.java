@@ -13,8 +13,8 @@ public class Model
 	
 	public static class Branch
 	{
+		boolean isRoot = false;
 		Point3f p;
-		Vector3f v;
 		ArrayList<Branch> children = new ArrayList<Branch>();
 	}
 	
@@ -22,9 +22,7 @@ public class Model
 	{
 		if( b.children.size() == 0 )
 		{
-			Point3f end = new Point3f( b.p );
-			end.add( b.v );
-			tips.add( end );
+			tips.add( b.p );
 		}
 		else
 		{
@@ -48,12 +46,17 @@ public class Model
 	private float getTotalBranchLength( Branch b )
 	{
 		float l = 0;
+		Vector3f v = new Vector3f();
 		for( Branch c : b.children )
 		{ 
+			v.set( b.p );
+			v.sub( c.p );
+			
+			l += v.lengthSquared();
+			
 			l += getTotalBranchLength( c );
 		}
-		float tl = b.v.lengthSquared();
-		return tl + l;// + 1f;
+		return l;
 	}
 		
 	public float getTotalBranchLength()
@@ -62,13 +65,16 @@ public class Model
 	}
 	
 	
-	float mutAmount = .01f;
+	float mutAmount = .05f;
 	private void mutInternalBranch( Branch o, Branch n )
 	{
-		n.v = new Vector3f( o.v );
-		n.v.x += DMath.randomf( -mutAmount, mutAmount );
-		n.v.y += DMath.randomf( -mutAmount, mutAmount );
-		n.v.z += DMath.randomf( -mutAmount, mutAmount );
+		n.p = new Point3f( o.p );
+		if( !n.isRoot ) 
+		{
+			n.p.x += DMath.randomf( -1, 1 ) * mutAmount;
+			n.p.y += DMath.randomf( -1, 1 ) * mutAmount;
+			n.p.z += DMath.randomf( -1, 1 ) * mutAmount;
+		}
 		
 		for( Branch ob : o.children )
 		{
@@ -80,12 +86,10 @@ public class Model
 			
 			Branch b = new Branch();
 			b.p = new Point3f( n.p );
-			b.p.add( n.v );
-			b.v = new Vector3f( ob.v );
 			
-			b.v.x += DMath.randomf( -mutAmount, mutAmount );
-			b.v.y += DMath.randomf( -mutAmount, mutAmount );
-			b.v.z += DMath.randomf( -mutAmount, mutAmount );
+			b.p.x += DMath.randomf( -1, 1 ) * mutAmount;
+			b.p.y += DMath.randomf( -1, 1 ) * mutAmount;
+			b.p.z += DMath.randomf( -1, 1 ) * mutAmount;
 			
 			n.children.add( b );
 			
@@ -97,12 +101,9 @@ public class Model
 		{
 			Branch b = new Branch();
 			b.p = new Point3f( n.p );
-			b.p.add( n.v );
-			b.v = new Vector3f();
-			
-			b.v.x = DMath.randomf( -1, 1 ) * mutAmount * 3;
-			b.v.y = DMath.randomf( -1, 1 ) * mutAmount * 3;
-			b.v.z = DMath.randomf( -1, 1 ) * mutAmount * 3;
+			b.p.x += DMath.randomf( -1, 1 ) * mutAmount * 3;
+			b.p.y += DMath.randomf( -1, 1 ) * mutAmount * 3;
+			b.p.z += DMath.randomf( -1, 1 ) * mutAmount * 3;
 			
 			n.children.add( b );
 		}
@@ -114,6 +115,7 @@ public class Model
 		
 		copy.root = new Branch();
 		copy.root.p = root.p;
+		copy.root.isRoot = true;
 		
 		mutInternalBranch( root, copy.root );
 		

@@ -75,7 +75,7 @@ public class Test extends PApplet implements ControlListener
 			Model m = new Model();
 			m.root = new Branch();
 			m.root.p = new Point3f( score.points.get( 0 ) );
-			m.root.v = new Vector3f( 1, 1, 0 );
+			m.root.isRoot = true;
 			
 			models.add( m );
 		}
@@ -105,9 +105,9 @@ public class Test extends PApplet implements ControlListener
 	
 	public void drawBranch( Branch b )
 	{
-		line( b.p.x, b.p.y, b.p.z, b.p.x+b.v.x, b.p.y+b.v.y, b.p.z+b.v.z );
 		for( Branch c : b.children )
 		{
+			line( b.p.x, b.p.y, b.p.z, c.p.x, c.p.y, c.p.z );
 			drawBranch( c );
 		}
 	}

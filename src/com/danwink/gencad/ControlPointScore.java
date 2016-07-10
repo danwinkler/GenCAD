@@ -20,20 +20,29 @@ public class ControlPointScore
 		points.add( p );
 	}
 	
-	public float branchAngleDifference( Branch b )
+	public float branchAngleDifference( Branch b, Branch parent )
 	{
 		float ad = 0;
 		
-		Vector3f bn = new Vector3f( b.v );
-		bn.normalize();
+		Vector3f pn = new Vector3f( b.p );
+		if( parent != null )
+		{
+			pn.sub( parent.p );
+			pn.normalize();
+		}
+		
 		for( Branch c : b.children )
 		{
-			Vector3f cn = new Vector3f( c.v );
-			cn.normalize();
+			if( parent != null )
+			{
+				Vector3f bn = new Vector3f( c.p );
+				bn.sub( b.p );
+				bn.normalize();
+				
+				ad += Math.pow( (Math.acos( bn.dot( pn ) ) - (Math.PI * .05f)) * 10, 3 );
+			}
 			
-			ad += Math.pow( (Math.acos( bn.dot( cn ) ) - (Math.PI * .05f)) * 10, 3 );
-			
-			ad += branchAngleDifference( c );
+			ad += branchAngleDifference( c, b );
 		}
 		return ad;
 	}
@@ -42,7 +51,7 @@ public class ControlPointScore
 	{
 		float tipDistanceScore = 0;
 		float totalBranchLength = 0;
-		float bad = branchAngleDifference( model.root );
+		float bad = branchAngleDifference( model.root, null );
 		
 		ArrayList<Point3f> tips = model.getTips();
 		for( Point3f p : points )
