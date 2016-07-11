@@ -70,5 +70,6 @@ public class ControlPointScore
 			tipDistanceScore += minDist;//(float)Math.sqrt( minDist );
 		}
 		
+		return tipDistanceScore*100 + totalBranchLength*1.0f / points.size() + bad * .2f;
 	}
 }
