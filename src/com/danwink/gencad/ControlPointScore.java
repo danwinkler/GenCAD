@@ -39,7 +39,7 @@ public class ControlPointScore
 				bn.sub( b.p );
 				bn.normalize();
 				
-				ad += Math.pow( (Math.acos( bn.dot( pn ) ) - (Math.PI * .05f)) * 10, 3 );
+				ad += Math.max( Math.pow( (Math.acos( bn.dot( pn ) )) * 10, 3 ), 0 );
 			}
 			
 			ad += branchAngleDifference( c, b );
@@ -50,10 +50,10 @@ public class ControlPointScore
 	public float score( Model model )
 	{
 		float tipDistanceScore = 0;
-		float totalBranchLength = 0;
+		float totalBranchLength = model.getTotalBranchLength();
 		float bad = branchAngleDifference( model.root, null );
 		
-		ArrayList<Point3f> tips = model.getTips();
+		ArrayList<Point3f> tips = model.getPoints();
 		for( Point3f p : points )
 		{
 			float minDist = Float.MAX_VALUE;
@@ -67,12 +67,8 @@ public class ControlPointScore
 					minDist = l;
 				}
 			}
-			tipDistanceScore += minDist; //(float)Math.sqrt( minDist );
+			tipDistanceScore += minDist;//(float)Math.sqrt( minDist );
 		}
 		
-		totalBranchLength += model.getTotalBranchLength();
-		
-		
-		return tipDistanceScore*100 + totalBranchLength + bad * .1f;
 	}
 }

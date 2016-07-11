@@ -24,6 +24,8 @@ public class Test extends PApplet implements ControlListener
 	
 	ControlPointScore score = new ControlPointScore();
 	
+	boolean optimizing = false;
+	
 	public void settings()
 	{
 		/*
@@ -39,12 +41,12 @@ public class Test extends PApplet implements ControlListener
 		}
 		*/
 		
-		for( int y = 0; y < 3; y++ )
+		for( int y = 0; y < 6; y++ )
 		{
 			for( int ai = 0; ai < 6; ai++ )
 			{
 				float angle = (float)((Math.PI/3) * ai);
-				score.add( new Point3f( (float)(Math.cos( angle ) * 5), (float)(Math.sin( angle ) * 5), y * 3 ) );
+				score.add( new Point3f( (float)(Math.cos( angle ) * (7 - y)), (float)(Math.sin( angle ) * (7 - y)), y * 3 ) );
 			}
 		}
 		
@@ -70,7 +72,8 @@ public class Test extends PApplet implements ControlListener
 	
 	public void buildShape()
 	{
-		for( int i = 0; i < 12; i++ )
+		models.clear();
+		for( int i = 0; i < 36; i++ )
 		{
 			Model m = new Model();
 			m.root = new Branch();
@@ -87,9 +90,16 @@ public class Test extends PApplet implements ControlListener
 		
 		for( int j = 0; j < 3; j++ )
 		{
-			for( int k = 0; k < 4; k++ )
+			for( int k = 0; k < 36/3; k++ )
 			{
-				newModels.add( models.get( j ).mutate() );
+				if( k == 0 ) 
+				{
+					newModels.add( models.get( j ) );
+				}
+				else
+				{
+					newModels.add( models.get( j ).mutate() );
+				}
 			}
 		}
 		
@@ -107,6 +117,8 @@ public class Test extends PApplet implements ControlListener
 	{
 		for( Branch c : b.children )
 		{
+			if( c.inserted ) stroke( 255, 0, 0 );
+			else stroke( 255, 255, 255 );
 			line( b.p.x, b.p.y, b.p.z, c.p.x, c.p.y, c.p.z );
 			drawBranch( c );
 		}
@@ -114,7 +126,24 @@ public class Test extends PApplet implements ControlListener
 	
 	public void draw()
 	{
-		mutate();
+		if( keyPressed ) 
+		{
+		    if( key == 'r' )
+		    {
+		    	buildShape();
+		    }
+		}
+		
+		if( optimizing )
+		{
+			ModelOptimizer.optimize( models.get( 0 ), score );
+			optimizing = false;
+		}
+		else
+		{
+			mutate();
+			optimizing = true;
+		}
 		
 		//RENDER
 		background( 0 );
@@ -139,7 +168,7 @@ public class Test extends PApplet implements ControlListener
 		ortho();
 		camera();
 		noLights();
-		text( models.get( 0 ).score, 0, 0 );
+		text( models.get( 0 ).score, 20, 20 );
 		cp5.draw();
 		cam.endHUD();
 	}
