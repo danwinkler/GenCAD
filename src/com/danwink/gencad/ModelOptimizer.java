@@ -14,6 +14,8 @@ public class ModelOptimizer
 		
 		Branch target = branches.get( (int)(Math.random()*branches.size()) );
 		
+		if( target == m.root ) return;
+		
 		Point3f orig = new Point3f( target.p );
 		
 		Point3f bestPoint = orig;

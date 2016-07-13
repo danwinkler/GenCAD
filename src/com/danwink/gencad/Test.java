@@ -3,6 +3,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.danwink.gencad.Model.Branch;
+import com.danwink.surfbuilder.MarchingSolver;
+import com.danwink.surfbuilder.Preset;
+import com.danwink.surfbuilder.Primitive;
+import com.danwink.surfbuilder.Triangle;
+import com.danwink.surfbuilder.fields.FieldBuilder;
+import com.danwink.surfbuilder.fields.FieldBuilder.Field;
+import com.danwink.surfbuilder.fields.MaxFieldBuilder;
+import com.danwink.surfbuilder.polygonize.MarchingCubePolygonizer;
+import com.danwink.surfbuilder.fields.SumFieldBuilder;
 
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
@@ -65,6 +74,30 @@ public class Test extends PApplet implements ControlListener
 		cp5.setAutoDraw( false );
 	}
 	
+	public void addLines( Branch b, ArrayList<Primitive> prims )
+	{
+		for( Branch c : b.children )
+		{
+			prims.add( new Preset.ConvLine( b.p, c.p, 2 ) );
+			addLines( c, prims );
+		}
+	}
+	
+	public void save()
+	{
+		ArrayList<Primitive> prims = new ArrayList<Primitive>();
+		
+		addLines( models.get( 0 ).root, prims );
+		
+		FieldBuilder fb = new SumFieldBuilder();
+		Field f = fb.buildField( prims, new Vector3f( -10, -10, -3 ), new Vector3f( 10, 10, 21 ), .2f );
+		
+		MarchingCubePolygonizer mc = new MarchingCubePolygonizer();
+		
+		ArrayList<Triangle> tris = mc.polygonize( f, .5f );
+		MarchingSolver.saveTriangles( tris, "test.scad" );
+	}
+	
 	public void controlEvent( ControlEvent e )
 	{
 		
@@ -118,6 +151,7 @@ public class Test extends PApplet implements ControlListener
 		for( Branch c : b.children )
 		{
 			if( c.inserted ) stroke( 255, 0, 0 );
+			else if( b == models.get( 0 ).root ) stroke( 0, 255, 0 );
 			else stroke( 255, 255, 255 );
 			line( b.p.x, b.p.y, b.p.z, c.p.x, c.p.y, c.p.z );
 			drawBranch( c );
@@ -131,6 +165,10 @@ public class Test extends PApplet implements ControlListener
 		    if( key == 'r' )
 		    {
 		    	buildShape();
+		    }
+		    if( key == 's' )
+		    {
+		    	save();
 		    }
 		}
 		
